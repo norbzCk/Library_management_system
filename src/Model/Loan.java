@@ -13,6 +13,7 @@ public class Loan {
 
     private String loanId;
     private Member member;
+    private Book book;
     private BookCopy bookCopy;
     private LocalDate borrowDate;
     private LocalDate dueDate;
@@ -22,18 +23,21 @@ public class Loan {
 
     public Loan(String loanId,
                 Member member,
+                Book book,
                 BookCopy bookCopy,
                 LocalDate borrowDate) {
-        this(loanId, member, bookCopy, borrowDate, member.getLoanPeriodDays());
+        this(loanId, member, book, bookCopy, borrowDate, member.getLoanPeriodDays());
     }
 
     public Loan(String loanId,
                 Member member,
+                Book book,
                 BookCopy bookCopy,
                 LocalDate borrowDate,
                 int loanPeriodDays) {
         this.loanId = loanId;
         this.member = member;
+        this.book = book;
         this.bookCopy = bookCopy;
         this.borrowDate = borrowDate;
         this.dueDate = borrowDate.plusDays(loanPeriodDays);
@@ -121,24 +125,29 @@ public class Loan {
         returnBook();
     }
 
+    public Book getBook() {
+        return book;
+    }
+
     @Override
     public String toString() {
         return String.format("""
-                ------------------------------
+                ------------------------------------------------------------
                 Loan ID      : %s
-                Member       : %s
+                Book Title   : %s
                 Copy ID      : %s
-                Borrow Date  : %s
-                Due Date     : %s
+                Member       : %s
+                Borrow Period: %s to %s
                 Return Date  : %s
                 Status       : %s
                 Overdue Days : %d
                 Fine         : %s
-                ------------------------------
+                ------------------------------------------------------------
                 """,
                 loanId,
-                member.getName(),
+                book != null ? book.getTitle() : "Unknown Book",
                 bookCopy.getCopyId(),
+                member.getName(),
                 borrowDate,
                 dueDate,
                 returnDate == null ? "N/A" : returnDate,

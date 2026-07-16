@@ -1,11 +1,6 @@
 package Service;
 
-import Model.Author;
-import Model.Book;
-import Model.BookCopy;
-import Model.Category;
-import Model.Loan;
-import Model.Member;
+import Model.*;
 import Notification.EmailNotification;
 import Notification.Notification;
 import Notification.SMSNotification;
@@ -67,6 +62,24 @@ public class LibrarySystem {
         return book;
     }
 
+
+    public void registerStudent(String memberId,
+                                String name,
+                                String email,
+                                String phone,
+                                String institution) {
+
+        registerMember(
+                new StudentMember(
+                        memberId,
+                        name,
+                        email,
+                        phone,
+                        institution
+                )
+        );
+    }
+
     public void registerMember(Member member) {
         members.add(member);
         notifyMember(member, "Welcome to " + libraryName + "!");
@@ -98,6 +111,10 @@ public class LibrarySystem {
     }
 
     public Loan borrowBook(String memberId, String copyId) {
+        return borrowBook(memberId, copyId, LocalDate.now());
+    }
+
+    public Loan borrowBook(String memberId, String copyId, LocalDate borrowDate) {
         Member member = findMember(memberId);
         if (member == null) {
             throw new IllegalArgumentException("Member not found: " + memberId);
@@ -116,13 +133,69 @@ public class LibrarySystem {
 
         copy.borrowCopy();
         String loanId = "L" + String.format("%03d", loanCounter++);
-        Loan loan = new Loan(loanId, member, copy, LocalDate.now());
+        Book book = null;
+        for (Book b : books) {
+            if (b.getCopies().contains(copy)) {
+                book = b;
+                break;
+            }
+        }
+        Loan loan = new Loan(loanId, member, book, copy, borrowDate);
         loans.add(loan);
         member.borrowBook(loan);
         notifyMember(member, "Borrowed copy " + copyId + ". Due: " + loan.getDueDate());
         return loan;
     }
 
+    public List<BookCopy> getAvailableCopies(String bookId) {
+
+        List<BookCopy> availableCopies = new ArrayList<>();
+
+        Book book = findBook(bookId);
+
+        if (book == null) {
+            return availableCopies;
+        }
+
+        for (BookCopy copy : book.getCopies()) {
+
+            if (copy.isAvailable()) {
+
+                availableCopies.add(copy);
+
+            }
+
+        }
+
+        return availableCopies;
+    }
+
+    public List<Loan> getCurrentLoans(String memberId) {
+
+        Member member = findMember(memberId);
+
+        if (member == null) {
+
+            return new ArrayList<>();
+
+        }
+
+        return member.getCurrentLoans();
+
+    }
+    public List<Loan> getLoanHistory(String memberId) {
+
+        Member member = findMember(memberId);
+
+        if (member == null) {
+
+            return new ArrayList<>();
+
+        }
+
+        return member.getLoanHistory();
+
+    }
     public Loan returnBook(String loanId) {
         Loan loan = findLoan(loanId);
         if (loan == null) {
@@ -133,19 +206,14 @@ public class LibrarySystem {
         notifyMember(loan.getMember(), "Returned loan " + loanId + " successfully.");
         return loan;
     }
-//                    case 11 -> demoStaffPolymorphism();
-    //                    case 11 -> demoStaffPolymorphism();
-
     public Member findMember(String memberId) {
         for (Member member : members) {
             if (member.getMemberId().equalsIgnoreCase(memberId)) {
-                return member;    //                    case 11 -> demoStaffPolymorphism();
-
+                return member;
             }
         }
         return null;
     }
-//                    case 11 -> demoStaffPolymorphism();
 
     public Book findBook(String bookId) {
         for (Book book : books) {
@@ -218,9 +286,17 @@ public class LibrarySystem {
     }
 
     private void notifyMember(Member member, String message) {
+        member.addNotification(message);
         Notification email = new EmailNotification(member.getEmail());
         Notification sms = new SMSNotification(member.getPhoneNumber());
         email.sendNotification(message);
         sms.sendNotification(message);
+    }
+
+    public void broadcastAnnouncement(String author, String message) {
+        String note = String.format("[Announcement by %s]: %s", author, message);
+        for (Member m : members) {
+            m.addNotification(note);
+        }
     }
 }

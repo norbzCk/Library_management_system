@@ -21,7 +21,7 @@ public class StudentMember extends Member {
 
     @Override
     public int getLoanPeriodDays() {
-        return 14;
+        return 5;
     }
 
     @Override

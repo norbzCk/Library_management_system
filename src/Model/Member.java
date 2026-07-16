@@ -18,6 +18,7 @@ public abstract class Member {
     private String membershipStatus;
     private List<Loan> currentLoans;
     private List<Loan> loanHistory;
+    private List<String> notifications;
 
     protected Member(String memberId,
                      String name,
@@ -31,6 +32,7 @@ public abstract class Member {
         this.membershipStatus = "Active";
         this.currentLoans = new ArrayList<>();
         this.loanHistory = new ArrayList<>();
+        this.notifications = new ArrayList<>();
     }
 
     /** Method overriding target — each member type returns its own limit. */
@@ -117,6 +119,18 @@ public abstract class Member {
                 currentLoans.size(),
                 getBorrowLimit(),
                 getLoanPeriodDays());
+    }
+
+    public void addNotification(String message) {
+        notifications.add(message);
+    }
+
+    public List<String> getNotifications() {
+        return notifications;
+    }
+
+    public void clearNotifications() {
+        notifications.clear();
     }
 
     @Override
