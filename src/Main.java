@@ -35,6 +35,42 @@ public class Main {
         }
     }
 
+    /**
+     * utility method to draw boxed borders around content implemented by Norbert.we did this to make the console output more visuallly well organized
+  21 +
+     */
+    public static void printBox(String title, String content) {
+        String[] lines = content.split("\n");
+        int maxLen = title.length();
+        for (String line : lines) {
+            if (line.length() > maxLen) {
+                maxLen = line.length();
+            }
+        }
+        // Add padding
+        int width = maxLen + 4;
+
+        // Draw top border
+        System.out.println("┌" + "─".repeat(width) + "┐");
+
+        // Draw title centered
+        if (!title.isEmpty()) {
+            int paddingLeft = (width - title.length()) / 2;
+            int paddingRight = width - title.length() - paddingLeft;
+            System.out.println("│" + " ".repeat(paddingLeft) + title + " ".repeat(paddingRight) + "│");
+            System.out.println("├" + "─".repeat(width) + "┤");
+        }
+
+        // Draw content lines
+        for (String line : lines) {
+            int paddingRight = width - line.length();
+            System.out.println("│  " + line + " ".repeat(paddingRight - 2) + "│");
+        }
+
+        // Draw bottom border
+        System.out.println("└" + "─".repeat(width) + "┘");
+    }
+
     private static void displayMainMenu() {
         System.out.println("""
             
@@ -67,12 +103,7 @@ public class Main {
 
         // Print login greeting
         System.out.println("\nWelcome back, " + member.getName() + " (" + member.getMemberType() + ")!");
-
-        // Automatically audit overdue books and print active warnings
-        checkAndAlertOverdueLoans(library, member);
-
-        // Display notifications/announcements
-        displayMemberNotifications(member);
+        System.out.println("Go to the 'Notifications' option in the menu to check active messages and overdue alerts.");
 
         boolean back = false;
         while (!back) {
@@ -99,7 +130,7 @@ public class Main {
                     case 4 -> viewSpecificMemberLoans(library, member);
                     case 5 -> borrowBookFlow(library, member);
                     case 6 -> returnBookFlow(library, member);
-                    case 7 -> displayMemberNotifications(member);
+                    case 7 -> displayMemberNotifications(library, member);
                     case 8 -> {
                         member.clearNotifications();
                         System.out.println("Notifications cleared.");
@@ -113,35 +144,39 @@ public class Main {
         }
     }
 
-    private static void checkAndAlertOverdueLoans(LibrarySystem library, Member member) {
+    private static void displayMemberNotifications(LibrarySystem library, Member member) {
+        StringBuilder sb = new StringBuilder();
+
+        // Check for any overdue loans and generate fines automatically
         boolean hasOverdue = false;
         for (Loan loan : library.getLoans()) {
             if (loan.getMember().getMemberId().equalsIgnoreCase(member.getMemberId()) && !loan.isReturned()) {
                 if (loan.isOverdue()) {
                     hasOverdue = true;
                     double fineAmt = loan.calculateFine();
-                    System.out.printf("  [URGENT WARNING] Loan ID %s for copy %s is OVERDUE by %d days!\n",
-                            loan.getLoanId(), loan.getBookCopy().getCopyId(), loan.getOverdueDays());
-                    System.out.printf("                   Current fine accumulated: %.2f Tsh.\n", fineAmt);
+                    sb.append(String.format("⚠️ URGENT WARNING: Loan ID %s for copy %s is OVERDUE by %d days!\n",
+                            loan.getLoanId(), loan.getBookCopy().getCopyId(), loan.getOverdueDays()));
+                    sb.append(String.format("                  Book Title: %s\n", loan.getBook().getTitle()));
+                    sb.append(String.format("                  Accumulated fine: %.2f Tsh.\n\n", fineAmt));
                 }
             }
         }
-        if (!hasOverdue) {
-            System.out.println("  Status: You have no overdue books. Thank you!");
-        }
-    }
 
-    private static void displayMemberNotifications(Member member) {
-        System.out.println("\n--- Notifications & Announcements Inbox ---");
+        if (!hasOverdue) {
+            sb.append("✓ Status: You have no overdue books. Thank you!\n\n");
+        }
+
+        sb.append("--- Notifications & Announcements Inbox ---\n");
         List<String> notifications = member.getNotifications();
         if (notifications.isEmpty()) {
-            System.out.println("No notifications or announcements.");
+            sb.append("No notifications or announcements.");
         } else {
             for (int i = 0; i < notifications.size(); i++) {
-                System.out.println((i + 1) + ". " + notifications.get(i));
+                sb.append(String.format("%d. %s\n", (i + 1), notifications.get(i)));
             }
         }
-        System.out.println("--------------------------------------------");
+
+        printBox("NOTIFICATIONS & ALERTS", sb.toString());
     }
 
     private static void librarianPortal(LibrarySystem library) {
@@ -223,8 +258,8 @@ public class Main {
                     case 5 -> listMembers(library);
                     case 6 -> listLoans(library);
                     case 7 -> {
-                        System.out.println(library.generateReport());
-                        System.out.println("Staff Log: " + staff.generateReport());
+                        printBox("LIBRARY REPORT & STATUS", library.generateReport());
+                        printBox("STAFF ACTIVITY LOG", "Staff Log: " + staff.generateReport());
                     }
                     case 8 -> broadcastAnnouncementFlow(library, staff);
                     case 9 -> {
@@ -259,7 +294,7 @@ public class Main {
     }
 
     private static void seedSampleData(LibrarySystem library) {
-        // Seed 5 sample books
+        // Seed 9 sample books (with overlapping keywords for "Java" and "Clean")
         library.addBook("B001", "Clean Code", "9780132350884", 2008,
                 "Robert Martin", "Programming");
         library.addBook("B002", "Effective Java", "9780134685991", 2018,
@@ -270,6 +305,14 @@ public class Main {
                 "Thomas Cormen", "Computer Science");
         library.addBook("B005", "The Pragmatic Programmer", "9780135957059", 2019,
                 "Andrew Hunt", "Programming");
+        library.addBook("B006", "Java: A Beginner's Guide", "9781260463415", 2020,
+                "Herbert Schildt", "Programming");
+        library.addBook("B007", "Core Java Volume I", "9780135166307", 2019,
+                "Cay Horstmann", "Programming");
+        library.addBook("B008", "Clean Architecture", "9780134494166", 2017,
+                "Robert Martin", "Programming");
+        library.addBook("B009", "Clean Agile", "9780135781869", 2019,
+                "Robert Martin", "Programming");
 
         // Seed some extra copies
         Book cleanCode = library.findBook("B001");
@@ -287,23 +330,36 @@ public class Main {
         library.registerMember(new FacultyMember(
                 "F001", "Dr. Said", "said@ifm.ac.tz", "0700000002", "Computer Science"));
 
-        // Seed an overdue loan for S001 borrowed 20 days ago (Student limit is 14 days, making it overdue)
+        // Seed an overdue loan for S001 borrowed 20 days ago
         library.borrowBook("S001", "BC001", LocalDate.now().minusDays(20));
 
         // Seed some announcements
-        library.broadcastAnnouncement("Sophia", "Welcome to the new academic year! We have added 5 standard computer science books to the catalog.");
+        library.broadcastAnnouncement("Sophia", "Welcome to the new academic year! We have added 9 standard reference books to the catalog.");
         library.broadcastAnnouncement("Joel", "The library will be closed on Friday for inventory check. Please plan returns accordingly.");
     }
 
     private static void listBooks(LibrarySystem library) {
         if (library.getBooks().isEmpty()) {
-            System.out.println("No books in catalog.");
+            printBox("CATALOG STATUS", "No books in catalog.");
             return;
         }
+        StringBuilder sb = new StringBuilder();
         for (Book book : library.getBooks()) {
-            System.out.println(book.getBookDetails());
-            book.getCopies().forEach(c -> System.out.println("  Copy: " + c));
+            sb.append(String.format("Book ID : %s | Title: %s\n", book.getBookId(), book.getTitle()));
+            sb.append(String.format("ISBN    : %s | Year : %d\n", book.getIsbn(), book.getPublicationYear()));
+            sb.append(String.format("Author  : %s | Category: %s\n", book.getAuthor(), book.getCategory()));
+            sb.append("Copies  :\n");
+            if (book.getCopies().isEmpty()) {
+                sb.append("  (No copies added yet)\n");
+            } else {
+                for (BookCopy copy : book.getCopies()) {
+                    sb.append(String.format("  - Copy ID: %s | Status: %s | Condition: %s\n",
+                            copy.getCopyId(), copy.getStatus(), copy.getCondition()));
+                }
+            }
+            sb.append("------------------------------------------------------------\n");
         }
+        printBox("BOOK CATALOG", sb.toString().trim());
     }
 
     private static void searchByTitle(LibrarySystem library) {
@@ -319,10 +375,16 @@ public class Main {
 
     private static void printSearchResults(List<Book> results) {
         if (results.isEmpty()) {
-            System.out.println("No matching books found.");
+            printBox("SEARCH RESULTS", "No matching books found.");
             return;
         }
-        results.forEach(b -> System.out.println(b.getBookDetails()));
+        StringBuilder sb = new StringBuilder();
+        results.forEach(b -> {
+            sb.append(String.format("Book ID : %s | Title: %s (by %s)\n", b.getBookId(), b.getTitle(), b.getAuthor()));
+            sb.append(String.format("Category: %s | Available Copies: %s\n", b.getCategory(), b.hasAvailableCopy() ? "Yes" : "No"));
+            sb.append("------------------------------------------------------------\n");
+        });
+        printBox("SEARCH RESULTS", sb.toString().trim());
     }
 
     private static void registerStudent(LibrarySystem library) {
@@ -354,20 +416,23 @@ public class Main {
     }
 
     private static void viewSpecificMemberLoans(LibrarySystem library, Member member) {
-        System.out.println("\n--- Current Active Loans for " + member.getName() + " ---");
+        StringBuilder sbCurrent = new StringBuilder();
         List<Loan> current = library.getCurrentLoans(member.getMemberId());
         if (current.isEmpty()) {
-            System.out.println("No active loans.");
+            sbCurrent.append("No active loans.");
         } else {
-            current.forEach(System.out::println);
+            current.forEach(l -> sbCurrent.append(l.toString()).append("\n"));
         }
-        System.out.println("\n--- Loan History for " + member.getName() + " ---");
+        printBox("CURRENT ACTIVE LOANS", sbCurrent.toString().trim());
+
+        StringBuilder sbHistory = new StringBuilder();
         List<Loan> history = library.getLoanHistory(member.getMemberId());
         if (history.isEmpty()) {
-            System.out.println("No loan history.");
+            sbHistory.append("No loan history.");
         } else {
-            history.forEach(System.out::println);
+            history.forEach(l -> sbHistory.append(l.toString()).append("\n"));
         }
+        printBox("LOAN HISTORY (with Book Titles, Borrow Periods & Return Dates)", sbHistory.toString().trim());
     }
 
     private static void borrowBookFlow(LibrarySystem library, Member member) {
@@ -385,14 +450,20 @@ public class Main {
             System.out.printf("- ID: %s | Title: %s (by %s)\n", b.getBookId(), b.getTitle(), b.getAuthor());
         }
 
-        String bookId = InputHelper.readString("\nEnter Book ID of the book you want to borrow: ");
-        Book selectedBook = library.findBook(bookId);
-        if (selectedBook == null) {
-            System.out.println("Invalid Book ID.");
-            return;
+        Book selectedBook = null;
+        while (selectedBook == null) {
+            String bookId = InputHelper.readString("\nEnter Book ID of the book you want to borrow (or type 'cancel' to exit): ");
+            if (bookId.equalsIgnoreCase("cancel")) {
+                System.out.println("Borrow transaction canceled.");
+                return;
+            }
+            selectedBook = library.findBook(bookId);
+            if (selectedBook == null) {
+                System.out.println("Invalid Book ID. Please try again.");
+            }
         }
 
-        List<BookCopy> availableCopies = library.getAvailableCopies(bookId);
+        List<BookCopy> availableCopies = library.getAvailableCopies(selectedBook.getBookId());
         if (availableCopies.isEmpty()) {
             System.out.println("Sorry, there are no copies of '" + selectedBook.getTitle() + "' currently available.");
             return;
@@ -403,18 +474,22 @@ public class Main {
             System.out.printf("- Copy ID: %s [Condition: %s]\n", copy.getCopyId(), copy.getCondition());
         }
 
-        String copyId = InputHelper.readString("\nEnter the Copy ID you wish to borrow: ");
         BookCopy selectedCopy = null;
-        for (BookCopy copy : availableCopies) {
-            if (copy.getCopyId().equalsIgnoreCase(copyId)) {
-                selectedCopy = copy;
-                break;
+        while (selectedCopy == null) {
+            String copyId = InputHelper.readString("\nEnter the Copy ID you wish to borrow (or type 'cancel' to exit): ");
+            if (copyId.equalsIgnoreCase("cancel")) {
+                System.out.println("Borrow transaction canceled.");
+                return;
             }
-        }
-
-        if (selectedCopy == null) {
-            System.out.println("Invalid Copy ID or copy not available.");
-            return;
+            for (BookCopy copy : availableCopies) {
+                if (copy.getCopyId().equalsIgnoreCase(copyId)) {
+                    selectedCopy = copy;
+                    break;
+                }
+            }
+            if (selectedCopy == null) {
+                System.out.println("Invalid Copy ID or copy not available. Please try again.");
+            }
         }
 
         boolean confirm = InputHelper.readYesNo("Confirm borrow of copy " + selectedCopy.getCopyId() + "?");
@@ -424,8 +499,7 @@ public class Main {
         }
 
         Loan loan = library.borrowBook(member.getMemberId(), selectedCopy.getCopyId());
-        System.out.println("\nSuccess! Book borrowed successfully.");
-        System.out.println(loan);
+        printBox("BORROW TRANSACTION SUCCESSFUL", "Book borrowed successfully:\n" + loan.toString());
     }
 
     private static void returnBookFlow(LibrarySystem library, Member member) {
@@ -442,18 +516,22 @@ public class Main {
                     loan.getLoanId(), loan.getBookCopy().getCopyId(), loan.getBookCopy(), loan.getDueDate());
         }
 
-        String loanId = InputHelper.readString("\nEnter the Loan ID you want to return: ");
         Loan selectedLoan = null;
-        for (Loan loan : activeLoans) {
-            if (loan.getLoanId().equalsIgnoreCase(loanId)) {
-                selectedLoan = loan;
-                break;
+        while (selectedLoan == null) {
+            String loanId = InputHelper.readString("\nEnter the Loan ID you want to return (or type 'cancel' to exit): ");
+            if (loanId.equalsIgnoreCase("cancel")) {
+                System.out.println("Return transaction canceled.");
+                return;
             }
-        }
-
-        if (selectedLoan == null) {
-            System.out.println("Invalid Loan ID.");
-            return;
+            for (Loan loan : activeLoans) {
+                if (loan.getLoanId().equalsIgnoreCase(loanId)) {
+                    selectedLoan = loan;
+                    break;
+                }
+            }
+            if (selectedLoan == null) {
+                System.out.println("Invalid Loan ID. Please try again.");
+            }
         }
 
         boolean confirm = InputHelper.readYesNo("Confirm return of Copy " + selectedLoan.getBookCopy().getCopyId() + "?");
@@ -463,8 +541,7 @@ public class Main {
         }
 
         Loan returnedLoan = library.returnBook(selectedLoan.getLoanId());
-        System.out.println("\nSuccess! Book returned successfully.");
-        System.out.println(returnedLoan);
+        printBox("RETURN TRANSACTION SUCCESSFUL", "Book returned successfully:\n" + returnedLoan.toString());
     }
 
     private static void addBook(LibrarySystem library) {
@@ -501,19 +578,23 @@ public class Main {
 
     private static void listMembers(LibrarySystem library) {
         if (library.getMembers().isEmpty()) {
-            System.out.println("No registered members.");
+            printBox("MEMBER MANAGEMENT", "No registered members.");
             return;
         }
+        StringBuilder sb = new StringBuilder();
         for (Member member : library.getMembers()) {
-            System.out.println(member.getMemberDetails());
+            sb.append(member.getMemberDetails()).append("\n");
         }
+        printBox("REGISTERED MEMBERS", sb.toString().trim());
     }
 
     private static void listLoans(LibrarySystem library) {
         if (library.getLoans().isEmpty()) {
-            System.out.println("No loans recorded in the system.");
+            printBox("LOAN MANAGEMENT", "No loans recorded in the system.");
             return;
         }
-        library.getLoans().forEach(System.out::println);
+        StringBuilder sb = new StringBuilder();
+        library.getLoans().forEach(l -> sb.append(l.toString()).append("\n"));
+        printBox("ALL RECORDED LOANS", sb.toString().trim());
     }
 }

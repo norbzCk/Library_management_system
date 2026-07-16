@@ -131,6 +131,10 @@ public class Loan {
 
     @Override
     public String toString() {
+        String returnStatusInfo = isReturned() 
+                ? "Returned on " + returnDate 
+                : "Not Returned (Still Borrowed)";
+        
         return String.format("""
                 ------------------------------------------------------------
                 Loan ID      : %s
@@ -138,8 +142,8 @@ public class Loan {
                 Copy ID      : %s
                 Member       : %s
                 Borrow Period: %s to %s
-                Return Date  : %s
                 Status       : %s
+                Return Info  : %s
                 Overdue Days : %d
                 Fine         : %s
                 ------------------------------------------------------------
@@ -150,8 +154,8 @@ public class Loan {
                 member.getName(),
                 borrowDate,
                 dueDate,
-                returnDate == null ? "N/A" : returnDate,
                 loanStatus,
+                returnStatusInfo,
                 getOverdueDays(),
                 fine == null ? "None" : fine.toString());
     }
