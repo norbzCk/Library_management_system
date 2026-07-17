@@ -1,6 +1,6 @@
 package Staff;
 
-/** Processes daily loans, returns, and inventory tasks. */
+/** Front-desk librarian: loans, returns, and shelf inventory. */
 public class Librarian extends LibraryStaff {
 
     public Librarian(String staffId, String staffName) {

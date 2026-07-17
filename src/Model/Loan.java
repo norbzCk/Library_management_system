@@ -4,8 +4,8 @@ import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 
 /**
- * Associates a Member with a specific BookCopy for a borrowing period.
- * UML: Loan → Member (1), Loan → BookCopy (1), Loan → Fine (0..1 composition).
+ * One borrowing of a specific copy by a member over a fixed period.
+ * A fine is created here if the copy comes back late.
  */
 public class Loan {
     public static final String ACTIVE = "Active";
@@ -21,20 +21,12 @@ public class Loan {
     private String loanStatus;
     private Fine fine;
 
-    public Loan(String loanId,
-                Member member,
-                Book book,
-                BookCopy bookCopy,
-                LocalDate borrowDate) {
+    public Loan(String loanId, Member member, Book book, BookCopy bookCopy, LocalDate borrowDate) {
         this(loanId, member, book, bookCopy, borrowDate, member.getLoanPeriodDays());
     }
 
-    public Loan(String loanId,
-                Member member,
-                Book book,
-                BookCopy bookCopy,
-                LocalDate borrowDate,
-                int loanPeriodDays) {
+    public Loan(String loanId, Member member, Book book, BookCopy bookCopy,
+                LocalDate borrowDate, int loanPeriodDays) {
         this.loanId = loanId;
         this.member = member;
         this.book = book;
@@ -44,37 +36,15 @@ public class Loan {
         this.loanStatus = ACTIVE;
     }
 
-    public String getLoanId() {
-        return loanId;
-    }
-
-    public Member getMember() {
-        return member;
-    }
-
-    public BookCopy getBookCopy() {
-        return bookCopy;
-    }
-
-    public LocalDate getBorrowDate() {
-        return borrowDate;
-    }
-
-    public LocalDate getDueDate() {
-        return dueDate;
-    }
-
-    public LocalDate getReturnDate() {
-        return returnDate;
-    }
-
-    public String getLoanStatus() {
-        return loanStatus;
-    }
-
-    public Fine getFine() {
-        return fine;
-    }
+    public String getLoanId() { return loanId; }
+    public Member getMember() { return member; }
+    public BookCopy getBookCopy() { return bookCopy; }
+    public LocalDate getBorrowDate() { return borrowDate; }
+    public LocalDate getDueDate() { return dueDate; }
+    public LocalDate getReturnDate() { return returnDate; }
+    public String getLoanStatus() { return loanStatus; }
+    public Fine getFine() { return fine; }
+    public Book getBook() { return book; }
 
     public boolean isReturned() {
         return RETURNED.equals(loanStatus);
@@ -85,19 +55,14 @@ public class Loan {
         return !isReturned() && endDate.isAfter(dueDate);
     }
 
-    /** Days overdue relative to due date (0 if not overdue). */
     public long getOverdueDays() {
         LocalDate endDate = returnDate != null ? returnDate : LocalDate.now();
-        if (!endDate.isAfter(dueDate)) {
-            return 0;
-        }
+        if (!endDate.isAfter(dueDate)) return 0;
         return ChronoUnit.DAYS.between(dueDate, endDate);
     }
 
     public double calculateFine() {
-        if (fine != null) {
-            return fine.getFineAmount();
-        }
+        if (fine != null) return fine.getFineAmount();
         return getOverdueDays() * Fine.DAILY_FINE_RATE;
     }
 
@@ -105,9 +70,7 @@ public class Loan {
         dueDate = dueDate.plusDays(days);
     }
 
-    /**
-     * Marks the loan returned, frees the BookCopy, and creates a Fine if overdue.
-     */
+    // Frees the copy and charges a fine if it's late.
     public void returnBook() {
         if (isReturned()) {
             throw new IllegalStateException("Loan has already been returned.");
@@ -115,7 +78,6 @@ public class Loan {
         returnDate = LocalDate.now();
         loanStatus = RETURNED;
         bookCopy.returnCopy();
-
         if (returnDate.isAfter(dueDate)) {
             fine = new Fine("FINE-" + loanId, this, returnDate);
         }
@@ -125,16 +87,12 @@ public class Loan {
         returnBook();
     }
 
-    public Book getBook() {
-        return book;
-    }
-
     @Override
     public String toString() {
-        String returnStatusInfo = isReturned() 
-                ? "Returned on " + returnDate 
+        String returnStatusInfo = isReturned()
+                ? "Returned on " + returnDate
                 : "Not Returned (Still Borrowed)";
-        
+
         return String.format("""
                 ------------------------------------------------------------
                 Loan ID      : %s

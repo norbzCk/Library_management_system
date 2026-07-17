@@ -1,7 +1,8 @@
 package Staff;
 
 /**
- * Abstract staff base class. Librarian and LibraryManager override behavior.
+ * Base class for library staff. Librarian and LibraryManager fill in the
+ * day-to-day behaviour; this is what the menus log in as.
  */
 public abstract class LibraryStaff {
     protected String staffId;
@@ -14,27 +15,13 @@ public abstract class LibraryStaff {
         this.staffRole = staffRole;
     }
 
-    public String getStaffId() {
-        return staffId;
-    }
-
-    public String getStaffName() {
-        return staffName;
-    }
-
-    public String getStaffRole() {
-        return staffRole;
-    }
+    public String getStaffId() { return staffId; }
+    public String getStaffName() { return staffName; }
+    public String getStaffRole() { return staffRole; }
 
     public abstract void manageBooks();
-
     public abstract void manageMembers();
-
     public abstract String generateReport();
-
-    protected boolean validateAccess() {
-        return staffId != null && !staffId.isBlank();
-    }
 
     @Override
     public String toString() {

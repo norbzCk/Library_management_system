@@ -2,16 +2,13 @@ package Util;
 
 import java.util.Scanner;
 
-/**
- * Helper for safe console input using Scanner.
- * Used by the menu in Main to avoid InputMismatchException crashes.
- */
+// this is a helper function that enables user to input data from the console , and so the system can read and process
 public class InputHelper {
 
     private static final Scanner scanner = new Scanner(System.in);
 
     private InputHelper() {
-        // utility class — no instances
+        // utility class — no instances (no need for them in a helper function)
     }
 
     public static String readString(String prompt) {

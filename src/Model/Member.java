@@ -5,8 +5,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Abstract base for library members.
- * Child classes (StudentMember, FacultyMember) override borrow rules.
+ * THis is Base class for borrowers. Students and faculty extend this and override the
+ * borrow rules (how many books, for how long).
  */
 public abstract class Member {
 
@@ -20,10 +20,7 @@ public abstract class Member {
     private List<Loan> loanHistory;
     private List<String> notifications;
 
-    protected Member(String memberId,
-                     String name,
-                     String email,
-                     String phoneNumber) {
+    protected Member(String memberId, String name, String email, String phoneNumber) {
         this.memberId = memberId;
         this.name = name;
         this.email = email;
@@ -35,45 +32,23 @@ public abstract class Member {
         this.notifications = new ArrayList<>();
     }
 
-    /** Method overriding target — each member type returns its own limit. */
+    // Subclasses decide the limits.
     public abstract int getBorrowLimit();
-
-    /** Method overriding target — each member type returns its own loan period. */
     public abstract int getLoanPeriodDays();
-
     public abstract String getMemberType();
 
-    public String getMemberId() {
+    public String getMemberId() { 
         return memberId;
     }
-
-    public String getName() {
-        return name;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public String getPhoneNumber() {
-        return phoneNumber;
-    }
-
-    public LocalDate getMembershipDate() {
-        return membershipDate;
-    }
-
-    public String getMembershipStatus() {
-        return membershipStatus;
-    }
-
-    public List<Loan> getCurrentLoans() {
-        return currentLoans;
-    }
-
-    public List<Loan> getLoanHistory() {
-        return loanHistory;
-    }
+    public String getName() { 
+        return name; }
+    public String getEmail() { 
+        return email; }
+    public String getPhoneNumber() { return phoneNumber; }
+    public LocalDate getMembershipDate() { return membershipDate; }
+    public String getMembershipStatus() { return membershipStatus; }
+    public List<Loan> getCurrentLoans() { return currentLoans; }
+    public List<Loan> getLoanHistory() { return loanHistory; }
 
     public boolean isActive() {
         return membershipStatus.equalsIgnoreCase("Active");
@@ -110,27 +85,18 @@ public abstract class Member {
                 Loan days : %d
                 ------------------------------
                 """,
-                memberId,
-                getMemberType(),
-                name,
-                email,
-                phoneNumber,
-                membershipStatus,
-                currentLoans.size(),
-                getBorrowLimit(),
-                getLoanPeriodDays());
+                memberId, getMemberType(), name, email, phoneNumber,
+                membershipStatus, currentLoans.size(), getBorrowLimit(), getLoanPeriodDays());
     }
 
-    public void addNotification(String message) {
-        notifications.add(message);
-    }
+    public void addNotification(String message) { notifications.add(message); }
+    public List<String> getNotifications() { return notifications; }
 
-    public List<String> getNotifications() {
-        return notifications;
-    }
+    public void clearNotifications() { notifications.clear(); }
 
-    public void clearNotifications() {
-        notifications.clear();
+    // Drops returned loans from the history view; active loans stay put.
+    public void clearLoanHistory() {
+        loanHistory.removeIf(Loan::isReturned);
     }
 
     @Override

@@ -13,34 +13,13 @@ public class Author {
         this.nationality = nationality;
     }
 
-    public String getAuthorId() {
-        return authorId;
-    }
+    public String getAuthorId() { return authorId; }
+    public String getAuthorName() { return authorName; }
+    public String getBiography() { return biography; }
+    public String getNationality() { return nationality; }
 
-    public String getAuthorName() {
-        return authorName;
-    }
-
-    public String getBiography() {
-        return biography;
-    }
-
-    public String getNationality() {
-        return nationality;
-    }
-
-    public String getAuthorInfo() {
-        return "Author ID:" + authorId +
-                "\nName: " + authorName +
-                "\nNationality: " + nationality;
-    }
-
-    public void updateBiography(String bio) {
-        biography = bio;
-    }
+    public void updateBiography(String bio) { biography = bio; }
 
     @Override
-    public String toString() {
-        return authorName;
-    }
+    public String toString() { return authorName; }
 }

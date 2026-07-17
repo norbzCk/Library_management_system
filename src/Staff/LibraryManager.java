@@ -1,6 +1,6 @@
 package Staff;
 
-/** Handles statistics, annual reports, and member approval. */
+/** Library manager: catalog strategy, stats, and member approvals. */
 public class LibraryManager extends LibraryStaff {
     private String managementLevel;
 
@@ -9,9 +9,7 @@ public class LibraryManager extends LibraryStaff {
         this.managementLevel = managementLevel;
     }
 
-    public String getManagementLevel() {
-        return managementLevel;
-    }
+    public String getManagementLevel() { return managementLevel; }
 
     @Override
     public void manageBooks() {
@@ -25,8 +23,7 @@ public class LibraryManager extends LibraryStaff {
 
     @Override
     public String generateReport() {
-        return "Annual library report prepared by " + staffName
-                + " (level: " + managementLevel + ")";
+        return "Annual library report prepared by " + staffName + " (level: " + managementLevel + ")";
     }
 
     public String viewStatistics() {

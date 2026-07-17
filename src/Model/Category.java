@@ -11,26 +11,10 @@ public class Category {
         this.description = description;
     }
 
-    public String getCategoryId() {
-        return categoryId;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public String getCategoryInfo() {
-        return "Category ID: " + categoryId +
-                "\nName: " + name +
-                "\nDescription: " + description;
-    }
+    public String getCategoryId() { return categoryId; }
+    public String getName() { return name; }
+    public String getDescription() { return description; }
 
     @Override
-    public String toString() {
-        return name;
-    }
+    public String toString() { return name; }
 }

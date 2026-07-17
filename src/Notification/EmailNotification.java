@@ -1,5 +1,7 @@
 package Notification;
 
+// Email channel. The actual delivery is simulated — the real notification
+// lands in the member's in-app inbox (see LibrarySystem.notifyMember).
 public class EmailNotification implements Notification {
     private String emailAddress;
 
@@ -9,7 +11,7 @@ public class EmailNotification implements Notification {
 
     @Override
     public void sendNotification(String message) {
-        System.out.println("[EMAIL → " + emailAddress + "] " + message);
+        // Intentionally silent: we don't want email/SMS noise on the console.
     }
 
     @Override
